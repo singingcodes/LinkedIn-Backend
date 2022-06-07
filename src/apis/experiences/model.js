@@ -12,8 +12,8 @@ const experienceSchema = new Schema(
     image: {
       type: String,
       default: 'https://www.kindpng.com/picc/m/451-4517876_default-profile-hd-png-download.png'
-    }
-    // user: { type: Schema.Types.ObjectId, required: true }
+    },
+    profile: { type: Schema.Types.ObjectId, required: true }
   },
   { timestamps: true }
 )
