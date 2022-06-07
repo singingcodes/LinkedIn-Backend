@@ -13,7 +13,8 @@ const postSchema = new Schema(
     },
     image: {
       type: String,
-      required: true,
+      default:
+        "https://www.kindpng.com/picc/m/451-4517876_default-profile-hd-png-download.png",
       //server generated image url
     },
     user: {
