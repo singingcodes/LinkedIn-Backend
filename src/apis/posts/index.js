@@ -1,15 +1,15 @@
-import express from "express"
-import createError from "http-errors"
-import postModel from "./model.js"
-import multer from "multer"
-import { CloudinaryStorage } from "multer-storage-cloudinary"
-import { v2 as cloudinary } from "cloudinary"
-import profileModel from "../profiles/model.js"
+import express from 'express'
+import createError from 'http-errors'
+import postModel from './model.js'
+import multer from 'multer'
+import { CloudinaryStorage } from 'multer-storage-cloudinary'
+import { v2 as cloudinary } from 'cloudinary'
+import profileModel from '../profiles/model.js'
 
 const postRouter = express.Router()
 
 //GET /api/posts
-postRouter.get("/", async (req, res, next) => {
+postRouter.get('/', async (req, res, next) => {
   try {
     const posts = await postModel.find()
     res.send(posts)
@@ -18,9 +18,9 @@ postRouter.get("/", async (req, res, next) => {
   }
 })
 //GET /api/posts/:id
-postRouter.get("/:id", async (req, res, next) => {
+postRouter.get('/:id', async (req, res, next) => {
   try {
-    const post = await postModel.findById(req.params.id)
+    const post = await postModel.findById(req.params.id).populate({ path: 'user' })
     if (!post) {
       next(createError(404, `Post with id ${req.params.id} not found`))
     }
@@ -30,26 +30,21 @@ postRouter.get("/:id", async (req, res, next) => {
   }
 })
 //POST /api/posts
-postRouter.post("/", async (req, res, next) => {
+postRouter.post('/', async (req, res, next) => {
   try {
     const newPost = new postModel(req.body)
     const { _id } = await newPost.save()
-    const user = await profileModel.findByIdAndUpdate(
-      req.body.profileId,
-      { $push: { posts: _id } },
-      { new: true }
-    )
-    res.status(201).send({ _id, user })
+    res.status(201).send({ _id })
   } catch (err) {
     next(err)
   }
 })
 //PUT /api/posts/:id
-postRouter.put("/:id", async (req, res, next) => {
+postRouter.put('/:id', async (req, res, next) => {
   try {
     const post = await postModel.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true,
+      runValidators: true
     })
     if (!post) {
       next(createError(404, `Post with id ${req.params.id} not found`))
@@ -60,7 +55,7 @@ postRouter.put("/:id", async (req, res, next) => {
   }
 })
 //DELETE /api/posts/:id
-postRouter.delete("/:id", async (req, res, next) => {
+postRouter.delete('/:id', async (req, res, next) => {
   try {
     const post = await postModel.findByIdAndDelete(req.params.id)
     if (!post) {
