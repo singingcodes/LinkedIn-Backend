@@ -1,3 +1,4 @@
+
 import express from "express"
 import ExperienceModel from "./model.js"
 import createError from "http-errors"
@@ -7,16 +8,25 @@ import { v2 as cloudinary } from "cloudinary"
 import { pipeline } from "stream"
 import json2csv from "json2csv"
 
+
 const router = express.Router()
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
     params: {
-      folder: "buildWeek#3",
-    },
+      folder: 'buildWeek#3'
+    }
   }),
-}).single("picture")
+  fileFilter: (req, file, multerNext) => {
+    if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png') {
+      multerNext(createError(400, 'Only PNG or JPEG allowed!'))
+    } else {
+      multerNext(null, true)
+    }
+  },
+  limits: { fileSize: 100 * 1024 * 1024 }
+}).single('picture')
 
 router.get("/", async (req, res, next) => {
   try {
@@ -84,6 +94,7 @@ router.delete("/:id", async (req, res, next) => {
 })
 router.post("/:id/picture", cloudinaryUploader, async (req, res, next) => {
   try {
+
     console.log("REQ.FILE.PATH", req.file.path)
     const updatedExperience = await ExperienceModel.findByIdAndUpdate(
       req.params.id,
@@ -95,6 +106,7 @@ router.post("/:id/picture", cloudinaryUploader, async (req, res, next) => {
         createError(404, `Experience with id ${req.params.id} not found!`)
       )
     console.log("FILE", req.file)
+
     res.send(updatedExperience)
   } catch (error) {
     console.log(error)
@@ -104,9 +116,7 @@ router.post("/:id/picture", cloudinaryUploader, async (req, res, next) => {
 router.get("/:id/csv", async (req, res, next) => {
   try {
     const experience = await ExperienceModel.findById(req.params.id)
-    const source = experience
-    const transform = new json2csv.Transform()
-    const destination = res
+
 
     res.setHeader(
       "Content-Disposition",
@@ -115,6 +125,16 @@ router.get("/:id/csv", async (req, res, next) => {
     pipeline(source, transform, destination, (err) => {
       if (err) console.log(err)
     })
+
+    const source = experience.cursor().exec().stream()
+    // const transform = new json2csv.Transform()
+    // const destination = res
+
+    // res.setHeader('Content-Disposition', 'attachment; filename= experiences.csv')
+    // pipeline(source, transform, destination, (err) => {
+    //   if (err) console.log(err)
+    // })
+
   } catch (error) {
     console.log(error)
     next(error)
