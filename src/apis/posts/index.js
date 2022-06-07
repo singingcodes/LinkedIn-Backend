@@ -8,6 +8,23 @@ import profileModel from '../profiles/model.js'
 
 const postRouter = express.Router()
 
+const cloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: 'LinkedIn Profile Images'
+    }
+  }),
+  fileFilter: (req, file, multerNext) => {
+    if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png') {
+      multerNext(createError(400, 'Only PNG or JPEG allowed!'))
+    } else {
+      multerNext(null, true)
+    }
+  },
+  limits: { fileSize: 100 * 1024 * 1024 }
+}).single('picture')
+
 //GET /api/posts
 postRouter.get('/', async (req, res, next) => {
   try {
@@ -58,6 +75,25 @@ postRouter.put('/:id', async (req, res, next) => {
 postRouter.delete('/:id', async (req, res, next) => {
   try {
     const post = await postModel.findByIdAndDelete(req.params.id)
+    if (!post) {
+      next(createError(404, `Post with id ${req.params.id} not found`))
+    }
+    res.send(post)
+  } catch (err) {
+    next(err)
+  }
+})
+
+postRouter.post('/:id/picture', cloudinaryUploader, async (req, res, next) => {
+  try {
+    const post = await postModel.findByIdAndUpdate(
+      req.params.id,
+      { image: req.file.path },
+      {
+        new: true,
+        runValidators: true
+      }
+    )
     if (!post) {
       next(createError(404, `Post with id ${req.params.id} not found`))
     }

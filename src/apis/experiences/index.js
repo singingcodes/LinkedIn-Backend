@@ -4,8 +4,7 @@ import createError from 'http-errors'
 import multer from 'multer'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { v2 as cloudinary } from 'cloudinary'
-import { pipeline } from 'stream'
-import json2csv from 'json2csv'
+import JSON2CSVParser from 'json2csv/lib/JSON2CSVParser.js'
 
 const router = express.Router()
 
@@ -96,20 +95,14 @@ router.post('/:id/picture', cloudinaryUploader, async (req, res, next) => {
 router.get('/:id/csv', async (req, res, next) => {
   try {
     const experience = await ExperienceModel.findById(req.params.id)
-
-    res.setHeader('Content-Disposition', 'attachment; filename= experiences.csv')
-    pipeline(source, transform, destination, (err) => {
-      if (err) console.log(err)
-    })
-
-    const source = experience.stream()
-    // const transform = new json2csv.Transform()
-    // const destination = res
-
-    // res.setHeader('Content-Disposition', 'attachment; filename= experiences.csv')
-    // pipeline(source, transform, destination, (err) => {
-    //   if (err) console.log(err)
-    // })
+    const jsonData = JSON.parse(JSON.stringify(experience))
+    console.log(jsonData)
+    const csvFields = ['role', 'company', 'startDate', 'endDate', 'description', 'area', 'profile', 'createdAt', 'updatedAt']
+    const json2csvParser = new JSON2CSVParser({ csvFields })
+    const csvData = json2csvParser.parse(jsonData)
+    res.setHeader('Content-disposition', 'attachment; filename=experiences.csv')
+    res.set('Content-Type', 'text/csv')
+    res.end(csvData)
   } catch (error) {
     console.log(error)
     next(error)
