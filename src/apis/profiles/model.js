@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import uniqueValidator from "mongoose-unique-validator"
 const { Schema, model } = mongoose
 
 const profileSchema = new Schema(
@@ -25,15 +26,21 @@ const profileSchema = new Schema(
     },
     image: {
       type: String,
-      required: true,
-      //server generated image url
+      default:
+        "https://www.kindpng.com/picc/m/451-4517876_default-profile-hd-png-download.png",
     },
     area: {
       type: String,
+      required: true,
+    },
+    username: {
+      type: String,
+      unique: true,
       required: true,
     },
   },
   { timestamps: true }
 )
 
+profileSchema.plugin(uniqueValidator)
 export default model("Profile", profileSchema)

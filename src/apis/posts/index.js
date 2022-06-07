@@ -35,7 +35,7 @@ postRouter.post("/", async (req, res, next) => {
     const newPost = new postModel(req.body)
     const { _id } = await newPost.save()
     const user = await profileModel.findByIdAndUpdate(
-      req.body.profile,
+      req.body.profileId,
       { $push: { posts: _id } },
       { new: true }
     )
