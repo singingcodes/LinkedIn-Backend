@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import mongoose from "mongoose"
 import listEndPoints from "express-list-endpoints"
+import profileRouter from "./apis/profiles/index.js"
 import {
   handleBadRequest,
   handleNotFound,
@@ -16,6 +17,7 @@ server.use(express.json())
 
 //Endpoint 1
 //Endpoint 2
+server.use("/profile", profileRouter)
 //Endpoint 3
 //Endpoint 4
 
