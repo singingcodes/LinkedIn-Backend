@@ -37,7 +37,7 @@ postRouter.get('/', async (req, res, next) => {
 //GET /api/posts/:id
 postRouter.get('/:id', async (req, res, next) => {
   try {
-    const post = await postModel.findById(req.params.id).populate({ path: 'user' })
+    const post = await postModel.findById(req.params.id).populate({ path: 'user', select: 'name surname image' })
     if (!post) {
       next(createError(404, `Post with id ${req.params.id} not found`))
     }
