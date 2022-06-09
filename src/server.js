@@ -4,6 +4,7 @@ import mongoose from "mongoose"
 import listEndPoints from "express-list-endpoints"
 import profileRouter from "./apis/profiles/index.js"
 import postRouter from "./apis/posts/index.js"
+import commentRouter from "./apis/comments/index.js"
 import {
   handleBadRequest,
   handleNotFound,
@@ -23,6 +24,7 @@ server.use("/profile", profileRouter)
 //Endpoint 3
 server.use("/posts", postRouter)
 //Endpoint 4
+server.use("/comments", commentRouter)
 
 const port = process.env.PORT || 5001
 

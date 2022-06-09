@@ -4,7 +4,6 @@ import postModel from "./model.js"
 import multer from "multer"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
-import profileModel from "../profiles/model.js"
 
 const postRouter = express.Router()
 
@@ -100,6 +99,18 @@ postRouter.post("/:id/picture", cloudinaryUploader, async (req, res, next) => {
       next(createError(404, `Post with id ${req.params.id} not found`))
     }
     res.send(post)
+  } catch (err) {
+    next(err)
+  }
+})
+
+//Make unique endpoints for posting (BOTH text and image together)
+postRouter.post("/picture", cloudinaryUploader, async (req, res, next) => {
+  try {
+    const newPost = new postModel(req.body)
+    newPost.image = req.file.path
+    const { _id } = await newPost.save()
+    res.status(201).send({ _id })
   } catch (err) {
     next(err)
   }
