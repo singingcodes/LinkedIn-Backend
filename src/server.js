@@ -21,7 +21,7 @@ server.use(express.json())
 server.use("/experiences", experienceRouter)
 //Endpoint 2
 server.use("/profile", profileRouter)
-server.use('/posts', likeRouter)
+server.use('/likes', likeRouter)
 server.use("/posts", postRouter)
 //Endpoint 4
 
