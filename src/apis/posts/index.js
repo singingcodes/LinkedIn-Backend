@@ -115,8 +115,7 @@ postRouter.post('/like/:postId', async (req, res, next) => {
     const foundUser = ProfileModel.findById(user)
     if (!foundUser) return next(createError(404, `User with ID ${user} not found!`))
 
-    const foundLike = await LikeModel.findOne({ post: post, user: user })
-    console.log('FOUND LIKE', foundLike)
+    const foundLike = await LikeModel.findOne({ post: post })
     if (foundLike) {
       const doesUserExist = foundLike.user.find((u) => u.toString() === user)
       if (doesUserExist) {
@@ -141,24 +140,28 @@ postRouter.post('/like/:postId', async (req, res, next) => {
 })
 postRouter.delete('/like/:postId/:likeId/:userId', async (req, res, next) => {
   try {
-    const post = PostModel.findById(req.params.postId)
+    const post = await PostModel.findById(req.params.postId)
     if (!post) return next(createError(404, `Post with ID ${req.params.postId} not found!`))
 
-    const user = ProfileModel.findById(req.body.userId)
-    if (!user) return next(createError(404, `User with ID ${req.body.userId} not found!`))
+    const user = await ProfileModel.findById(req.params.userId)
+    if (!user) return next(createError(404, `User with ID ${req.params.userId} not found!`))
 
-    const like = LikeModel.findById(req.params.likeId)
-    if (!like) return next(createError(404, `Like with id ${req.params.likeId} not found!`))
-
-    const foundUser = like.user.find((user) => user._id === req.params.userId)
-    if (!foundUser) return next(createError(404, `User with id ${req.params.userId} not found!`))
-
-    const updatedLike = LikeModel.findByIdAndUpdate(
-      req.params.likeId,
-      { $pull: { user: foundUser } },
-      { new: true, runValidators: true }
-    )
-    res.status(204).send()
+    const like = await LikeModel.findOne({ post: post })
+    if (like) {
+      const doesUserExist = like.user.find((u) => u.toString() === req.params.userId)
+      if (doesUserExist) {
+        const updatedLike = await LikeModel.findOneAndUpdate(
+          { post: post },
+          { $pull: { user: req.params.userId } },
+          { new: true, runValidators: true }
+        )
+        res.status(201).send(updatedLike)
+      } else {
+        next(createError(200, `User already likes posts`))
+      }
+    } else {
+      next(createError(200, `User does not like post`))
+    }
   } catch (error) {
     console.log(error)
     next(error)
