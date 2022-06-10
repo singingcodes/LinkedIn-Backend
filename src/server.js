@@ -12,6 +12,7 @@ import {
   genericServerError,
 } from "./errorHandlers.js"
 import experienceRouter from "./apis/experiences/index.js"
+import likeRouter from './apis/likes/index.js'
 
 const server = express()
 
@@ -21,7 +22,7 @@ server.use(express.json())
 server.use("/experiences", experienceRouter)
 //Endpoint 2
 server.use("/profile", profileRouter)
-//Endpoint 3
+// server.use('/likes', likeRouter)
 server.use("/posts", postRouter)
 //Endpoint 4
 server.use("/comments", commentRouter)
