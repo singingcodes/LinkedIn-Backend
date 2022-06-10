@@ -118,13 +118,17 @@ postRouter.post('/like/:postId', async (req, res, next) => {
     const foundLike = await LikeModel.findOne({ post: post })
 
     if (foundLike) {
-      await LikeModel.findOneAndUpdate({ post: post }, { $push: { user: user } }, { new: true, runValidators: true })
+      const updatedLike = await LikeModel.findOneAndUpdate(
+        { post: post },
+        { $push: { user: user } },
+        { new: true, runValidators: true }
+      )
+      res.status(201).send(updatedLike)
     } else {
       const newLike = new LikeModel(req.body)
       const { _id } = await newLike.save()
+      res.status(201).send({ _id })
     }
-
-    res.status(201).send(_id)
   } catch (error) {
     console.log(error)
     next(error)
