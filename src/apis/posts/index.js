@@ -126,15 +126,20 @@ postRouter.post('/like/:postId', async (req, res, next) => {
     const foundUser = ProfileModel.findById(user)
     if (!foundUser) return next(createError(404, `User with ID ${user} not found!`))
 
-    const foundLike = await LikeModel.findOne({ post: post })
-
+    const foundLike = await LikeModel.findOne({ post: post, user: user })
+    console.log('FOUND LIKE', foundLike)
     if (foundLike) {
-      const updatedLike = await LikeModel.findOneAndUpdate(
-        { post: post },
-        { $push: { user: user } },
-        { new: true, runValidators: true }
-      )
-      res.status(201).send(updatedLike)
+      const doesUserExist = foundLike.user.find((u) => u.toString() === user)
+      if (doesUserExist) {
+        next(createError(200, `User already likes posts`))
+      } else {
+        const updatedLike = await LikeModel.findOneAndUpdate(
+          { post: post },
+          { $push: { user: user } },
+          { new: true, runValidators: true }
+        )
+        res.status(201).send(updatedLike)
+      }
     } else {
       const newLike = new LikeModel(req.body)
       const { _id } = await newLike.save()
