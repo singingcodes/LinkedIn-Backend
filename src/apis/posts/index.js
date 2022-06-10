@@ -108,12 +108,23 @@ postRouter.post('/:id/picture', cloudinaryUploader, async (req, res, next) => {
 
 postRouter.post('/like/:postId', async (req, res, next) => {
   try {
-    const post = PostModel.findById(req.params.postId)
-    if (!post) return next(createError(404, `Post with ID ${req.params.postId} not found!`))
-    const user = ProfileModel.findById(req.body.userId)
-    if (!user) return next(createError(404, `User with ID ${req.body.userId} not found!`))
-    const newLike = new LikeModel(req.body)
-    const { _id } = await newLike.save()
+    const { user, post } = req.body
+
+    const foundPost = PostModel.findById(post)
+    if (!foundPost) return next(createError(404, `Post with ID ${post} not found!`))
+    const foundUser = ProfileModel.findById(user)
+    if (!foundUser) return next(createError(404, `User with ID ${user} not found!`))
+
+    const foundLike = await LikeModel.findOne({ post: post })
+    console.log(isLikeThere)
+
+    if (foundLike) {
+      await LikeModel.findOneAndUpdate({ post: post }, { $push: { user: user } }, { new: true, runValidators: true })
+    } else {
+      const newLike = new LikeModel(req.body)
+      const { _id } = await newLike.save()
+    }
+
     res.status(201).send(_id)
   } catch (error) {
     console.log(error)
